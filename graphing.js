@@ -60,11 +60,10 @@ if (!window.location.search.includes('season=')) {
 	const timeFormat = 'DD/MM/YYYY HH:mm'
 	async function request(endpoint) {
 		// HERE
-		// return '';
+
 		// const response = await fetch(`${api}:8080/leaderboard/${endpoint}${window.location.search}`)
-		console.log(`${api}`)
+
 		const response = await fetch(`${api}`, {method:"GET"})
-		console.log('here2')
 		if (response.status != 200 && response.status != 201)
 			return await response.text()
 		else
@@ -121,7 +120,7 @@ if (!window.location.search.includes('season=')) {
 	// let data = await (currentSeason ? request('get') : request('archived'))
 	let data = await request('get')
 	// let data = getTestData();
-	console.log(data);
+	// console.log(data);
 
 
 	if (!(data instanceof Object)) return error(data)
@@ -288,34 +287,34 @@ if (!window.location.search.includes('season=')) {
 		}
 		function metricsData(data) {
 			metricsConfig.data = {
-				labels: data.map((metric) => moment(metric.time).format(timeFormat)),
+				labels: data.map((metric) => moment.utc(metric.time).local().format(timeFormat)),
 				datasets: [
 				{
 					label: 'Players Registered',
 					borderColor: color = `hsl(42 38%67%)`,
 					backgroundColor: color,
-					data: data.map((metric) => { return { t: moment(metric.time).format(timeFormat), y: metric.players } }),
+					data: data.map((metric) => { return { t: moment.utc(metric.time).local().format(timeFormat), y: metric.players } }),
 					yAxisID: 'players'
 				},
 				{
 					label: 'Matches Played',
 					borderColor: color = `hsl(233 38%67%)`,
 					backgroundColor: color,
-					data: data.map((metric) => { return { t: moment(metric.time).format(timeFormat), y: metric.matches } }),
+					data: data.map((metric) => { return { t: moment.utc(metric.time).local().format(timeFormat), y: metric.matches } }),
 					yAxisID: 'matches'
 				},
 				{
 					label: 'Algos Uploaded',
 					borderColor: color = `hsl(346 53%43%)`,
 					backgroundColor: color,
-					data: data.map((metric) => { return { t: moment(metric.time).format(timeFormat), y: metric.algos } }),
+					data: data.map((metric) => { return { t: moment.utc(metric.time).local().format(timeFormat), y: metric.algos } }),
 					yAxisID: 'algos'
 				},
 				{
 					label: 'Matches Played over Algos Uploaded',
 					borderColor: color = `hsl(181 42%49%)`,
 					backgroundColor: color,
-					data: data.map((metric) => { return { t: moment(metric.time).format(timeFormat), y: (metric.matches / metric.algos).toFixed(2) } }),
+					data: data.map((metric) => { return { t: moment.utc(metric.time).local().format(timeFormat), y: (metric.matches / metric.algos).toFixed(2) } }),
 					yAxisID: 'matches_per_algo'
 				}
 				]
@@ -323,7 +322,7 @@ if (!window.location.search.includes('season=')) {
 		}
 		function label(algos) {
 			const labels = []
-			algos.forEach((algo) => algo.elo.forEach((elo) => labels.indexOf(time = moment(elo.time).format(timeFormat)) === -1 ? labels.push(time) : 0))
+			algos.forEach((algo) => algo.elo.forEach((elo) => labels.indexOf(time =moment.utc(elo.time).local().format(timeFormat)) === -1 ? labels.push(time) : 0))
 			return labels
 		}
 		function topData(algos) {
@@ -332,7 +331,7 @@ if (!window.location.search.includes('season=')) {
 				datasets: algos.map((algo) => ({
 					label: algo.name, data: algo.elo.map((elo) => {
 						Math.seedrandom(algo.name)
-						return { t: moment(elo.time).format(timeFormat), y: elo.elo }
+						return { t: moment.utc(elo.time).local().format(timeFormat), y: elo.elo }
 					}), borderColor: color = `hsl(${Math.random() * 360} ${Math.random() * 9 + 34}%${Math.random() * 11 + 51}%)`, backgroundColor: color,
 					hidden: document.location.search.includes('focus') ? document.location.search.split('focus=')[1] == algo.id ? false : true : false
 				}))
@@ -354,15 +353,15 @@ if (!window.location.search.includes('season=')) {
 		const metrics = new Chart(metricsField, metricsConfig)
 
 		// HERE
-		// if (currentSeason) {
-		// 	data = await request('new')
-		// 	if (!(data instanceof Object)) return error(data)
-		// 		topData(data.algos)
-		// 	metricsData(data.metrics)
-		// 	top.update()
-		// 	metrics.update()
-		// 	show('(thanks for being a cron) new data received (scroll down to see metrics if not visible)')
-		// }
+		if (currentSeason) {
+			data = await request('new')
+			if (!(data instanceof Object)) return error(data)
+				topData(data.algos)
+			metricsData(data.metrics)
+			top.update()
+			metrics.update()
+			show('(thanks for being a cron) new data received (scroll down to see metrics if not visible)')
+		}
 		progress.set(1)
 		if (!currentSeason) show('archived data loaded successfully')
 	})()
