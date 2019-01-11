@@ -4,8 +4,8 @@ function getTestData() {
 		"algos":
 		[
 			{
-				"name": "testAlgo",
 				"id": 49638,
+				"name": "testAlgo",
 				"elo":
 				[
 					{ "time" : "2019-01-11T05:20:14.671Z", "elo" : 500 },
@@ -60,8 +60,11 @@ if (!window.location.search.includes('season=')) {
 	const timeFormat = 'DD/MM/YYYY HH:mm'
 	async function request(endpoint) {
 		// HERE
-		return '';
-		const response = await fetch(`${api}/leaderboard/${endpoint}${window.location.search}`)
+		// return '';
+		// const response = await fetch(`${api}:8080/leaderboard/${endpoint}${window.location.search}`)
+		console.log(`${api}`)
+		const response = await fetch(`${api}`, {method:"GET"})
+		console.log('here2')
 		if (response.status != 200 && response.status != 201)
 			return await response.text()
 		else
@@ -114,8 +117,10 @@ if (!window.location.search.includes('season=')) {
 		return false
 	}
 
+	// HERE
 	// let data = await (currentSeason ? request('get') : request('archived'))
-	let data = getTestData();
+	let data = await request('get')
+	// let data = getTestData();
 	console.log(data);
 
 
